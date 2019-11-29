@@ -30,7 +30,7 @@ Invoke using `zulu -driver {driver} [flags] [user:password@host:port]...`
 * `permissive` Continue (instead of exiting) after printing any errors to console.
 * `sequential` Instead of trying to connect to as many hosts as possible, connect to each host individually in order and wait for the operation to complete before continuing.
 * `rate {duration}` Specify the duration to sleep after all devices have been attempted before looping. Ignored if `-oneshot` is specified.
-* `driver {driver}` Choose the device and connection types for all hosts specified in this invokation.
+* `driver {driver}` Choose the device and connection types for all hosts specified in this invocation.
 
 ### Hosts
 In general, `zulu` will be using TCP-IP to connect to each device. Unless otherwise specified by a driver, hosts are in the traditional ssh-style format:
