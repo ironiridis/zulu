@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"log"
+	"net"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -23,6 +25,43 @@ type driverInterface interface {
 }
 
 var drivers map[string]driverInterface
+
+// connResolve breaks a connection string into an optional username, an optional password,
+// a required host ip (optionally resolved from a hostname), and an optional port.
+func connResolve(conn, defaultUsername, defaultPassword string, defaultPort int) (*net.TCPAddr, string, string, error) {
+	var auth, host, username, password string
+	parts := strings.SplitN(conn, "@", 2)
+	if len(parts) == 2 {
+		auth, host = parts[0], parts[1]
+		authparts := strings.SplitN(auth, ":", 2)
+		if len(authparts) == 2 {
+			if authparts[0] != "" {
+				username = authparts[0]
+			} else {
+				username = defaultUsername
+			}
+			password = authparts[1]
+		} else {
+			username = auth
+			password = defaultPassword
+		}
+	} else {
+		username = defaultUsername
+		password = defaultPassword
+		host = conn
+	}
+
+	var addr *net.TCPAddr
+	addr, err := net.ResolveTCPAddr("tcp", host)
+	if err != nil {
+		ip, err := net.ResolveIPAddr("ip", host)
+		if err != nil {
+			return nil, "", "", err
+		}
+		addr = &net.TCPAddr{IP: ip.IP, Port: defaultPort}
+	}
+	return addr, username, password, nil
+}
 
 func registerDriver(n string, d driverInterface) {
 	if n == "list" {
